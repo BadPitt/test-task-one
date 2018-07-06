@@ -1,0 +1,19 @@
+plugins {
+    id 'java'
+    id 'maven'
+}
+
+group 'ru.gpb'
+version '1.0.0'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.0'
+}

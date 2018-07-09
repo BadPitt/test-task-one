@@ -1,6 +1,8 @@
 package ru.gpb.core;
 
-import java.text.SimpleDateFormat;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Constants for task one and task two
@@ -13,12 +15,12 @@ public final class Constants {
     private Constants() {
     }
 
-    public static final SimpleDateFormat DATE_TIME_FORMAT =
-            new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
+    public static final DateTimeFormatter DATE_TIME_FORMAT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
-    public static final SimpleDateFormat DATE_FORMAT =
-            new SimpleDateFormat("yyyy-MM-dd");
+    public static final DateTimeFormatter  DATE_FORMAT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 
-    public static final String FILE_CHARSET = "UTF-8";
+    public static final Charset FILE_CHARSET = StandardCharsets.UTF_8;
 }

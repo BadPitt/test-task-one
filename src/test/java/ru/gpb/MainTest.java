@@ -11,6 +11,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -23,12 +26,12 @@ public class MainTest {
     private static final String OUTPUT_FILE_NAME = "src/test/resources/test.txt";
     private static final String INPUT_FILE_NAME = "src/test/resources/sellPoints.txt";
 
-    @BeforeClass
+    //@BeforeClass
     public static void prepare() {
         clear();
     }
 
-    @AfterClass
+    //@AfterClass
     public static void rmRf() {
         clear();
     }
@@ -64,10 +67,10 @@ public class MainTest {
             assertTrue(sellPoints.contains(row.getSellPoint()));
 
             Calendar generated = Calendar.getInstance();
-            generated.setTime(row.getOperationDate());
+            generated.setTime(localDateTimeToDate(row.getOperationDate()));
             Calendar january = getCalendar(2016, 11, 31);
             Calendar december = getCalendar(2018, 0, 1);
-            assertTrue(""+i+":"+DATE_TIME_FORMAT.format(generated.getTime()),
+            assertTrue(""+i+":"+DATE_TIME_FORMAT.format(dateToLocalDateTime(generated.getTime())),
                     generated.after(january) && generated.before(december));
 
             assertTrue(row.getOperationSum().compareTo(new BigDecimal(100_001)) < 0);
@@ -87,12 +90,12 @@ public class MainTest {
     @Test
     public void generateDateTest() {
         for (int i = 0; i < 1_000_000; i++) {
-            Date date = Main.generateDate();
+            LocalDateTime date = Main.generateDate();
             Calendar generated = Calendar.getInstance();
-            generated.setTime(date);
+            generated.setTime(localDateTimeToDate(date));
             Calendar january = getCalendar(2016, 11, 31);
             Calendar december = getCalendar(2018, 0, 1);
-            assertTrue(""+i+":"+DATE_TIME_FORMAT.format(generated.getTime()),
+            assertTrue(""+i+":"+DATE_TIME_FORMAT.format(dateToLocalDateTime(generated.getTime())),
                     generated.after(january) && generated.before(december));
         }
     }
@@ -110,5 +113,21 @@ public class MainTest {
         calendar.set(Calendar.DAY_OF_MONTH, day);
 
         return calendar;
+    }
+
+    private Date localDateTimeToDate(LocalDateTime ldt) {
+        if (ldt == null) {
+            return null;
+        }
+        return Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    private LocalDateTime dateToLocalDateTime(Date date) {
+        if (date == null) {
+            return null;
+        }
+        return Instant.ofEpochMilli(date.getTime())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
     }
 }

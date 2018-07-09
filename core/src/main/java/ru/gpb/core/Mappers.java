@@ -1,6 +1,7 @@
 package ru.gpb.core;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import static ru.gpb.core.Constants.DATE_TIME_FORMAT;
 
@@ -31,11 +32,11 @@ public final class Mappers {
         try {
             String[] values = str.split(" ");
             row.setOperationNumber(Long.parseLong(values[0]));
-            row.setOperationDate(DATE_TIME_FORMAT.parse(values[1]));
+            row.setOperationDate(LocalDateTime.parse(values[1], DATE_TIME_FORMAT));
             row.setSellPoint(values[2]);
             row.setOperationSum(new BigDecimal(values[3]));
         } catch (Exception e) {
-            throw new ApplicationException("File corrupted");
+            throw new ApplicationException("File corrupted", e);
         }
         return row;
     }

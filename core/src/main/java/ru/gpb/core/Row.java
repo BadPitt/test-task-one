@@ -3,7 +3,7 @@ package ru.gpb.core;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * Object representation of row in file
@@ -15,7 +15,7 @@ import java.util.Date;
 @Data
 public class Row {
     private Long operationNumber;
-    private Date operationDate;
+    private LocalDateTime operationDate;
     private String sellPoint;
     private BigDecimal operationSum;
 }

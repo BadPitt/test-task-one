@@ -1,18 +1,19 @@
 package ru.gpb;
 
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.gpb.core.Mappers;
 import ru.gpb.core.Row;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -24,6 +25,8 @@ import static ru.gpb.core.Constants.FILE_CHARSET;
  * @author Danil Popov
  */
 public class Main {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
+
     private static final String HELP = "Arguments:\n" +
             "the first - sell points file name\n" +
             "the second - quantity of rows\n" +
@@ -35,8 +38,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             // validate args
-            InputValidator validator = new InputValidator();
-            validator.validate(args);
+            InputValidator.validate(args);
 
             Options options = Options.parseOptions(args);
 
@@ -75,21 +77,24 @@ public class Main {
                     .map(Mappers::rawToString)
                     .reduce((s, s2) -> s + "\n" + s2)
                     .get();
+            result+="\n";
 
             // write to output
             Files.write(
                     Paths.get(options.getOutputFileName()),
-                    result.getBytes(Charset.forName(FILE_CHARSET)),
-                    StandardOpenOption.CREATE
+                    result.getBytes(FILE_CHARSET),
+                    StandardOpenOption.CREATE, StandardOpenOption.APPEND
             );
         } catch (IOException ioe) {
             System.out.println("troubles with FS working: " + ioe.getMessage());
+            LOGGER.error("IO troubles", ioe);
         } catch (Exception e) {
             System.out.println("something went wrong: " + e.getMessage());
+            LOGGER.error("Unhandled exception", e);
         }
     }
 
-    static Date generateDate() {
+    static LocalDateTime generateDate() {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR) - 1);
 
@@ -102,7 +107,9 @@ public class Main {
         calendar.set(Calendar.SECOND, ThreadLocalRandom.current().nextInt(60));
         calendar.set(Calendar.MILLISECOND, ThreadLocalRandom.current().nextInt(1000));
 
-        return calendar.getTime();
+        return calendar.getTime().toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
     }
 
     static int getLastYearDaysCount() {

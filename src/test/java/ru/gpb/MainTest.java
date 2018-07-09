@@ -26,12 +26,12 @@ public class MainTest {
     private static final String OUTPUT_FILE_NAME = "src/test/resources/test.txt";
     private static final String INPUT_FILE_NAME = "src/test/resources/sellPoints.txt";
 
-    //@BeforeClass
+    @BeforeClass
     public static void prepare() {
         clear();
     }
 
-    //@AfterClass
+    @AfterClass
     public static void rmRf() {
         clear();
     }

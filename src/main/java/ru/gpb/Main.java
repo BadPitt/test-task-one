@@ -12,10 +12,10 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static ru.gpb.core.Constants.FILE_CHARSET;
 
@@ -47,50 +47,51 @@ public class Main {
                 return;
             }
 
+            AtomicLong counter = new AtomicLong(0);
             List<String> sellPoints =
                     Files.readAllLines(Paths.get(options.getSellPointsFileName()));
-
-            // generate every raw
-            List<Row> rows = new ArrayList<>();
-            for (long i = 0; i < options.getQuantityOfOperations(); i++) {
-                Row raw = new Row();
-                raw.setOperationNumber(i);
-                raw.setOperationDate(Main.generateDate());
-                raw.setSellPoint(
-                        sellPoints.stream()
-                                .skip(
-                                        ThreadLocalRandom.current().nextLong(sellPoints.size())
+            sellPoints.stream()
+                    .map(a -> {
+                        Row raw = new Row();
+                        raw.setOperationNumber(counter.incrementAndGet());
+                        raw.setOperationDate(Main.generateDate());
+                        raw.setSellPoint(
+                                sellPoints.stream()
+                                        .skip(
+                                                ((long) (Math.random() * sellPoints.size()))
+                                        )
+                                        .findFirst()
+                                        .get()
+                        );
+                        raw.setOperationSum(
+                                new BigDecimal(
+                                        ((int) (Math.random() * 90_001) + 10_000)
                                 )
-                                .findFirst()
-                                .get()
-                );
-                raw.setOperationSum(
-                        new BigDecimal(
-                                ThreadLocalRandom.current().nextInt(10_000, 100_001)
-                        )
-                );
-                rows.add(raw);
-            }
-
-            // format
-            String result = rows.stream()
+                        );
+                        return raw;
+                    })
                     .map(Mappers::rawToString)
-                    .reduce((s, s2) -> s + "\n" + s2)
-                    .get();
-            result+="\n";
+                    .map(a -> a + "\n")
+                    .forEach(a -> writeString(a, options.getOutputFileName()));
 
-            // write to output
-            Files.write(
-                    Paths.get(options.getOutputFileName()),
-                    result.getBytes(FILE_CHARSET),
-                    StandardOpenOption.CREATE, StandardOpenOption.APPEND
-            );
         } catch (IOException ioe) {
             System.out.println("troubles with FS working: " + ioe.getMessage());
             LOGGER.error("IO troubles", ioe);
         } catch (Exception e) {
             System.out.println("something went wrong: " + e.getMessage());
             LOGGER.error("Unhandled exception", e);
+        }
+    }
+
+    static void writeString(String stringRow, String fileName) {
+        try {
+            Files.write(
+                    Paths.get(fileName),
+                    stringRow.getBytes(FILE_CHARSET),
+                    StandardOpenOption.CREATE, StandardOpenOption.APPEND
+            );
+        } catch (IOException e) {
+            LOGGER.error("error occurred", e);
         }
     }
 

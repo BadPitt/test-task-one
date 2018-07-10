@@ -71,7 +71,6 @@ public class Main {
                         return raw;
                     })
                     .map(Mappers::rawToString)
-                    .map(a -> a + "\n")
                     .forEach(a -> writeString(a, options.getOutputFileName()));
 
         } catch (IOException ioe) {

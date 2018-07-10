@@ -24,7 +24,7 @@ public final class Mappers {
                 raw.getOperationNumber() + " " +
                 DATE_TIME_FORMAT.format(raw.getOperationDate()) + " " +
                 raw.getSellPoint() + " " +
-                raw.getOperationSum();
+                raw.getOperationSum() + "\n";
     }
 
     public static Row stringToRow(String str) {

@@ -52,7 +52,7 @@ public class MainTest {
     public void execMainTest() throws IOException {
         Main.main(new String[]{
                 new File(INPUT_FILE_NAME).getPath(),
-                "10",
+                "10000",
                 new File(OUTPUT_FILE_NAME).getPath()
         });
 
@@ -93,10 +93,10 @@ public class MainTest {
             LocalDateTime date = Main.generateDate();
             Calendar generated = Calendar.getInstance();
             generated.setTime(localDateTimeToDate(date));
-            Calendar january = getCalendar(2016, 11, 31);
-            Calendar december = getCalendar(2018, 0, 1);
+            Calendar minDate = getCalendar(2016, 11, 31);
+            Calendar maxDate = getCalendar(2018, 0, 1);
             assertTrue(""+i+":"+DATE_TIME_FORMAT.format(dateToLocalDateTime(generated.getTime())),
-                    generated.after(january) && generated.before(december));
+                    generated.after(minDate) && generated.before(maxDate));
         }
     }
 

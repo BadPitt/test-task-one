@@ -10,12 +10,12 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Calendar;
+import java.time.LocalTime;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
 
 import static ru.gpb.core.Constants.FILE_CHARSET;
 
@@ -47,31 +47,7 @@ public class Main {
                 return;
             }
 
-            AtomicLong counter = new AtomicLong(0);
-            List<String> sellPoints =
-                    Files.readAllLines(Paths.get(options.getSellPointsFileName()));
-            sellPoints.stream()
-                    .map(a -> {
-                        Row raw = new Row();
-                        raw.setOperationNumber(counter.incrementAndGet());
-                        raw.setOperationDate(Main.generateDate());
-                        raw.setSellPoint(
-                                sellPoints.stream()
-                                        .skip(
-                                                ((long) (Math.random() * sellPoints.size()))
-                                        )
-                                        .findFirst()
-                                        .get()
-                        );
-                        raw.setOperationSum(
-                                new BigDecimal(
-                                        ((int) (Math.random() * 90_001) + 10_000)
-                                )
-                        );
-                        return raw;
-                    })
-                    .map(Mappers::rawToString)
-                    .forEach(a -> writeString(a, options.getOutputFileName()));
+            generateSellPoints(options);
 
         } catch (IOException ioe) {
             System.out.println("troubles with FS working: " + ioe.getMessage());
@@ -80,6 +56,38 @@ public class Main {
             System.out.println("something went wrong: " + e.getMessage());
             LOGGER.error("Unhandled exception", e);
         }
+    }
+
+    static void generateSellPoints(Options options) throws IOException {
+        AtomicLong counter = new AtomicLong(0);
+        List<String> sellPoints =
+                Files.readAllLines(Paths.get(options.getSellPointsFileName()));
+        Stream.generate(() -> Main.generateRow(counter, sellPoints))
+                .limit(options.getQuantityOfOperations())
+                .map(Mappers::rawToString)
+                .forEach(a -> writeString(a, options.getOutputFileName()));
+    }
+
+    static Row generateRow(AtomicLong counter, List<String> sellPoints) {
+        Row raw = new Row();
+        raw.setOperationNumber(counter.incrementAndGet());
+        raw.setOperationDate(Main.generateDate());
+        raw.setSellPoint(Main.getRandomSellPoint(sellPoints));
+        raw.setOperationSum(
+                new BigDecimal(
+                        ((int) (Math.random() * 90_001) + 10_000)
+                )
+        );
+        return raw;
+    }
+
+    static String getRandomSellPoint(List<String> sellPoints) {
+        return sellPoints.stream()
+                .skip(
+                        ((long) (Math.random() * sellPoints.size()))
+                )
+                .findFirst()
+                .get();
     }
 
     static void writeString(String stringRow, String fileName) {
@@ -95,28 +103,17 @@ public class Main {
     }
 
     static LocalDateTime generateDate() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR) - 1);
+        int year = LocalDateTime.now().getYear() - 1;
+        int minDay = (int) LocalDate.of(year, 1, 1).toEpochDay();
+        int maxDay = (int) LocalDate.of(year, 12, 31).toEpochDay();
+        int day = (int) (Math.random() * (maxDay - minDay + 1)) + minDay;
 
-        int days = getLastYearDaysCount();
+        LocalTime time = LocalTime.of(
+                (int)(Math.random()*24),
+                (int)(Math.random()*60),
+                (int)(Math.random()*60)
+        );
 
-        calendar.set(Calendar.DAY_OF_YEAR, ThreadLocalRandom.current().nextInt(days) + 1);
-
-        calendar.set(Calendar.HOUR_OF_DAY, ThreadLocalRandom.current().nextInt(24));
-        calendar.set(Calendar.MINUTE, ThreadLocalRandom.current().nextInt(60));
-        calendar.set(Calendar.SECOND, ThreadLocalRandom.current().nextInt(60));
-        calendar.set(Calendar.MILLISECOND, ThreadLocalRandom.current().nextInt(1000));
-
-        return calendar.getTime().toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime();
-    }
-
-    static int getLastYearDaysCount() {
-        Calendar now = Calendar.getInstance();
-        now.set(Calendar.DAY_OF_MONTH, 1);
-        now.set(Calendar.MONTH, 0);
-        now.add(Calendar.DAY_OF_MONTH, -1);
-        return now.get(Calendar.DAY_OF_YEAR);
+        return LocalDateTime.of(LocalDate.ofEpochDay(day), time);
     }
 }

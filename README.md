@@ -9,8 +9,25 @@
 Пример запуска программы: \
 ```java -jar build/libs/test-task-one-1.0.0.jar src/test/resources/sellPoints.txt 1000 src/test/resources/result.txt```
 
-Подпроект test содержит бенчмарки для измерения времени, необходимого для генерации данных. \
-Результаты локального запуска: \
+Подпроект test содержит бенчмарки для измерения времени, необходимого для генерации данных.
+
+Ниже приведены результаты запуска на машине с характеристиками: \
+JVM - version: JDK 1.8.0_172, Java HotSpot(TM) 64-Bit Server VM, 25.172-b11 \
+OS  - Ubuntu 17.10 \
+CPU - Intel® Core™ i3-7100 CPU @ 3.90GHz × 4 \
+RAM - 15,6 GiB \
+HDD: 
+
+```$sudo hdparm -Tt /dev/sda  ``` \
+/dev/sda: \
+ Timing cached reads:   12866 MB in  2.00 seconds = 6443.46 MB/sec \
+ Timing buffered disk reads: 182 MB in  3.02 seconds =  60.24 MB/sec \
+```$dd bs=1M count=256 if=/dev/zero of=test conv=fdatasync ``` \
+256+0 records in \
+256+0 records out \
+268435456 bytes (268 MB, 256 MiB) copied, 3,56009 s, 75,4 MB/s
+
+т.е. скорость записи минуя кэши: ~75,4 MB/s
 
 | Benchmark                          | Mode | Cnt | Score  | Error | Units |
 | ---------------------------------- |:----:|:---:|:------:|:-----:| -----:|
